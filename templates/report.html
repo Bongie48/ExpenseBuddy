@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Expense Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .navbar {
+      background: #f8d7da; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1050;
+      padding: 0.25rem 1rem; 
+    }
+    .navbar-brand {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: black;
+    }
+    .navbar-nav .nav-link {
+      color: black !important;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    .navbar-nav .nav-link:hover {
+      color: #000; 
+    }
+    body {
+      padding-top: 70px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f8d7da 0%, #f0f4f8 100%);
+      min-height: 100vh;
+    }
+    .cont {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-family: 'Pacifico', cursive;
+    }
+    h3 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style-type: disc;
+      padding-left: 20px;
+    }
+    a.back-link {
+      display: block;
+      margin: 30px auto 0;
+      text-align: center;
+      font-weight: 600;
+      text-decoration: none;
+      color: #007bff;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background-color: #fde2e2;
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+  <div class="cont">
+    <h2>Expense Report</h2>
+    <h3>Total Cost: {{ "%.2f"|format(total) }}</h3>
+    <h3>Predicted Spending for Next Month: {{ "%.2f"|format(predicted_next_month) }}</h3>
+
+    <!-- Chart toggle buttons -->
+    <div style="margin-top:20px;">
+      <button id="lineBtn" class="btn btn-outline-primary btn-sm">Line Chart</button>
+      <button id="barBtn" class="btn btn-outline-secondary btn-sm">Bar Chart</button>
+    </div>
+
+    <!-- Canvas for the chart -->
+    <canvas id="expenseChart" width="800" height="400" style="margin-top:20px;"></canvas>
+
+    <h3>Monthly Costs</h3>
+    <ul>
+      {% for (year, month), cost in monthly.items() %}
+        <li>{{ year }}-{{ "%02d"|format(month) }}: {{ "%.2f"|format(cost) }}</li>
+      {% endfor %}
+    </ul>
+
+    <h3>Yearly Costs</h3>
+    <ul>
+      {% for year, cost in yearly.items() %}
+        <li>{{ year }}: {{ "%.2f"|format(cost) }}</li>
+      {% endfor %}
+    </ul>
+
+    <!-- Download button -->
+    <a href="{{ url_for('report_pdf') }}" class="btn btn-primary">Download PDF Report</a>
+  </div>
+
+  <!-- Include Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Prepare chart data
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    const labels = [
+      {% for (year, month) in monthly.keys() %}
+        '{{ year }}-{{ "%02d"|format(month) }}'{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    ];
+    const dataPoints = [
+      {% for cost in monthly.values() %}
+        {{ "%.2f"|format(cost) }}{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    ];
+
+    // Chart configuration
+    let chartType = 'line';
+    let chartConfig = {
+      type: chartType,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Monthly Expenses',
+          data: dataPoints,
+          fill: false,
+          borderColor: 'blue',
+          backgroundColor: 'lightblue',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Month'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Amount (ZAR)'
+            }
+          }
+        }
+      }
+    };
+
+    // Instantiate chart
+    let expenseChart = new Chart(ctx, chartConfig);
+
+    // Buttons for toggling chart type
+    document.getElementById('lineBtn').addEventListener('click', () => {
+      if (expenseChart.config.type !== 'line') {
+        expenseChart.destroy();
+        chartConfig.type = 'line';
+        expenseChart = new Chart(ctx, chartConfig);
+      }
+    });
+
+    document.getElementById('barBtn').addEventListener('click', () => {
+      if (expenseChart.config.type !== 'bar') {
+        expenseChart.destroy();
+        chartConfig.type = 'bar';
+        expenseChart = new Chart(ctx, chartConfig);
+      }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

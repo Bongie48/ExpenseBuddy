@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delete Expense</title>
+<!-- Bootstrap CSS for responsiveness and styling -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  /* Fixed Navbar with smaller height */
+  .navbar {
+     background: #f8d7da; /* light pink background */
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1050;
+  }
+  /* Reduce the font size of the brand text for compactness */
+  .navbar-brand {
+    font-family: 'Pacifico', cursive;
+      font-size: 1.8rem;
+      color: black;
+  }
+  /* Style nav links for clarity and size */
+  .navbar-nav .nav-link {
+   color: black !important;
+      font-weight: 600;
+      transition: color 0.3s;
+  }
+  .navbar-nav .nav-link:hover {
+    color: #000; /* hover color */
+  }
+
+  /* Body padding to prevent content hidden under navbar */
+  body {
+    padding-top: 100px; /* same as navbar height + margin */
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Main container styling */
+
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: 'Pacifico', cursive;
+}
+
+/* Style for form labels and inputs */
+form label {
+  font-weight: 600;
+  display: block;
+  margin-top: 10px;
+}
+form input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Style for buttons and links */
+button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  width: 100%;
+}
+a.back-link {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 600;
+  text-decoration: none;
+  color: #007bff;
+}
+a.back-link:hover {
+  text-decoration: underline;
+}
+.cont {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: lightpink;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+/* Flash messages style */
+ul.flash-messages {
+  margin-top: 15px;
+  list-style: none;
+  padding: 0;
+}
+ul.flash-messages li {
+  color: red;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+ {% include 'navbar.html' %}
+<div class="cont">
+  <h2>Delete Expense</h2>
+  <form method="post">
+    <label for="category">Category to delete:</label>
+    <input type="text" id="category" name="category" required />
+
+    <label for="date">Date of category (MM/DD/YYYY):</label>
+    <input type="text" id="date" name="date" placeholder="e.g., 04/20/2025" required />
+
+    <button type="submit" class="btn btn-danger w-100">Delete</button>
+  </form>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="flash-messages">
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

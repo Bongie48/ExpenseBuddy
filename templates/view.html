@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>All Expenses</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat&display=swap" rel="stylesheet" />
+<style>
+  .navbar {
+    background: #f8d7da;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1050;
+    padding: 0.25rem 1rem;
+  }
+  .navbar-brand {
+    font-family: 'Pacifico', cursive;
+    font-size: 1.8rem;
+    color: black;
+  }
+  .navbar-nav .nav-link {
+    color: black !important;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  .navbar-nav .nav-link:hover {
+    color: #000;
+  }
+  body {
+    padding-top: 70px;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #f8d7da 0%, #f0f4f8 100%);
+  }
+  .cont {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Pacifico', cursive;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+  }
+  th {
+    background-color: #fde2e2;
+  }
+</style>
+</head>
+<body>
+ {% include 'navbar.html' %}
+<div class="cont">
+ <h2>All Expenses</h2>
+    {% if records %}
+    <form method="post">
+    <div class="table-responsive">
+    <table class="table table-hover align-middle shadow-sm rounded" style="background:#fff; border-radius:12px; overflow:hidden;">
+      <thead class="table-light">
+        <tr>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set last_month = None %}
+        {% for row in records %}
+          {% set dt = row[2]|default('') %}
+          {% if dt and dt|length == 10 %}
+            {% set y = dt[0:4] %}
+            {% set m = dt[5:7] %}
+            {% set year_month = y ~ '-' ~ m %}
+            {% set month_name = ['January','February','March','April','May','June','July','August','September','October','November','December'][m|int - 1] %}
+            {% set display_month = month_name ~ ' ' ~ y %}
+          {% else %}
+            {% set year_month = 'Unknown' %}
+            {% set display_month = 'Unknown' %}
+          {% endif %}
+          {% if last_month is not none and year_month != last_month %}
+            <tr class="table-primary">
+              <td colspan="5" class="text-end fw-bold">
+                Total for 
+                {% set last_y = last_month[0:4] %}
+                {% set last_m = last_month[5:7] %}
+                {% set last_month_name = ['January','February','March','April','May','June','July','August','September','October','November','December'][last_m|int - 1] %}
+                {{ last_month_name }} {{ last_y }}: 
+                <span class="text-success">R{{ '%.2f'|format(monthly_totals[last_month]) }}</span>
+              </td>
+            </tr>
+          {% endif %}
+          <tr>
+            <td><span class="badge bg-info text-dark px-3 py-2" style="font-size:1rem;">{{ row[0] }}</span></td>
+            <td><span class="fw-semibold text-success">R{{ row[1] }}</span></td>
+            <td>
+              {% if dt and dt|length == 10 %}
+                {% set y = dt[0:4]|int %}
+                {% set m = dt[5:7]|int %}
+                {% set d = dt[8:10]|int %}
+                {{ d }} {{ ['January','February','March','April','May','June','July','August','September','October','November','December'][m-1] }} {{ y }}
+              {% else %}
+                {{ row[2] }}
+              {% endif %}
+            </td>
+            <td>{{ row[3] }}</td>
+            <td>
+              <button type="submit" name="delete" value="{{ loop.index0 }}" class="btn btn-outline-danger btn-sm" title="Delete" onclick="return confirm('Delete this record?');">
+                <span aria-hidden="true">&times;</span> 🗑️
+              </button>
+            </td>
+          </tr>
+          {% set next_month = None %}
+          {% if loop.index < records|length %}
+            {% set next_dt = records[loop.index][2]|default('') %}
+            {% if next_dt and next_dt|length == 10 %}
+              {% set next_month = next_dt[0:4] ~ '-' ~ next_dt[5:7] %}
+            {% else %}
+              {% set next_month = 'Unknown' %}
+            {% endif %}
+          {% endif %}
+          {% if loop.last or year_month != next_month %}
+            <tr class="table-primary">
+              <td colspan="5" class="text-end fw-bold">
+                Total for {{ month_name }} {{ y }}: <span class="text-success">R{{ '%.2f'|format(monthly_totals[year_month]) }}</span>
+              </td>
+            </tr>
+          {% endif %}
+          {% set last_month = year_month %}
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info mt-3">No records to display.</div>
+    {% endif %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
